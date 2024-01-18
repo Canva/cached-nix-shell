@@ -20,7 +20,7 @@ fn main() {
         );
         println!(
             "cargo:rustc-env=CNS_BASH={}",
-            var("BASH").expect("Expect to the BASH env var to be set.")
+            var("BASH_INTERACTIVE").expect("Expect to the BASH_INTERACTIVE env var to be set.")
         );
         println!(
             "cargo:rustc-env=CNS_NIX={}/",

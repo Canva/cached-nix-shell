@@ -18,7 +18,7 @@ in mkShell {
     git
     openssh
   ];
-  inherit (main) ESSENTIALS BASH NIX_BIN IN_NIX BLAKE3_CSRC;
+  inherit (main) ESSENTIALS BASH_INTERACTIVE NIX_BIN IN_NIX BLAKE3_CSRC;
   CNS_IN_NIX_SHELL = "1";
   RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
 }

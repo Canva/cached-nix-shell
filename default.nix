@@ -14,7 +14,7 @@ let
 
   ESSENTIALS = with pkgs;
     lib.makeBinPath [ bashInteractive coreutils nix gitMinimal gnutar gzip ];
-  BASH = "${pkgs.bashInteractive}/bin/bash";
+  BASH_INTERACTIVE = "${pkgs.bashInteractive}/bin/bash";
   NIX_BIN = "${pkgs.nix}/bin";
   IN_NIX = true;
 
@@ -26,7 +26,7 @@ let
   };
   # Final overrides.
   package' = package.overrideAttrs (_: {
-    inherit ESSENTIALS BASH NIX_BIN IN_NIX;
+    inherit ESSENTIALS BASH_INTERACTIVE NIX_BIN IN_NIX;
     CNS_GIT_COMMIT = if builtins.pathExists ./.git then
       pkgs.lib.commitIdFromGitRepo ./.git
     else
