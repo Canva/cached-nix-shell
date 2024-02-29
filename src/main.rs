@@ -284,10 +284,10 @@ fn run_script(
     let exec = if is_literal_bash_string(nix_shell_args.interpreter.as_bytes())
     {
         // eprintln!("Interpreter is a literal string, executing directly");
-        // We also check for CNS_CACHED_UPDATED so that we don't run shellHook twice when
+        // We also check for CNS_SHELL_HOOKED so that we don't run shellHook twice when
         // the cache is populated/updated after running real nix-shell (which will invoke shellHook)
         let mut exec_string = OsString::new();
-        exec_string.push(r#"[ -z "${CNS_CACHED_UPDATED}" -a -n "${shellHook:-}" ] && eval "$shellHook"; exec "#);
+        exec_string.push(r#"[ -z "${CNS_SHELL_HOOKED}" -a -n "${shellHook:-}" ] && eval "$shellHook"; exec "#);
         exec_string.push(nix_shell_args.interpreter);
         exec_string.push(" ");
         exec_string.push(fname);
@@ -428,7 +428,7 @@ fn cached_shell_env(pure: bool, inp: &NixShellInput) -> EnvOptions {
 
         // set an environment variable to mark that cache is populated/updated
         let mut cached_env = outp.env;
-        cached_env.insert(OsString::from("CNS_CACHED_UPDATED"), OsString::from("1"));
+        cached_env.insert(OsString::from("CNS_SHELL_HOOKED"), OsString::from("1"));
 
         cached_env
     };
