@@ -341,9 +341,7 @@ fn run_script(
         // eprintln!("Interpreter is a literal string, executing directly");
         // following https://github.com/NixOS/nix/commit/437189e446e16399d347e4430c4d115b4cf2ddf1
         let mut exec_string = OsString::new();
-        exec_string.push("source ");
-        exec_string.push(env!("CNS_RCFILE"));
-        exec_string.push("; exec ");
+        exec_string.push(r#"[ -n "${shellHook:-}" ] && eval "$shellHook"; exec "#);
         exec_string.push(nix_shell_args.interpreter);
         exec_string.push(" ");
         exec_string.push(fname);
