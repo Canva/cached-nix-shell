@@ -152,6 +152,9 @@ fn args_to_inp(pwd: PathBuf, x: &Args) -> NixShellInput {
             "ftp_proxy",
             "all_proxy",
             "no_proxy",
+            // We want to pass SHELL by default
+            // https://canva.sourcegraphcloud.com/search?q=context:global+ORIGINAL_USER_SHELL&patternType=keyword&sm=0
+            "SHELL",
         ];
         for var in whitelist {
             if let Some(val) = std::env::var_os(var) {
@@ -280,9 +283,21 @@ fn run_script(
 
     let exec = if is_literal_bash_string(nix_shell_args.interpreter.as_bytes())
     {
-        Command::new(nix_shell_args.interpreter)
-            .arg(fname)
-            .args(script_args)
+        // eprintln!("Interpreter is a literal string, executing directly");
+        // We also check for CNS_SHELL_HOOKED so that we don't run shellHook twice when
+        // the cache is populated/updated after running real nix-shell (which will invoke shellHook)
+        let mut exec_string = OsString::new();
+        exec_string.push(r#"[ -z "${CNS_SHELL_HOOKED}" -a -n "${shellHook:-}" ] && eval "$shellHook"; exec "#);
+        exec_string.push(nix_shell_args.interpreter);
+        exec_string.push(" ");
+        exec_string.push(fname);
+        exec_string.push(" ");
+        exec_string.push(script_args.join(&OsStr::new(" ")));
+        // eprintln!("{:?}", exec_string);
+
+        Command::new("bash")
+            .arg("-c")
+            .arg(exec_string)
             .env_clear()
             .envs(&env.env)
             .exec()
@@ -411,7 +426,11 @@ fn cached_shell_env(pure: bool, inp: &NixShellInput) -> EnvOptions {
         cache_write(&inputs_hash, "trace", &outp.trace.serialize());
         cache_symlink(&inputs_hash, "drv", &outp.drv);
 
-        outp.env
+        // set an environment variable to mark that cache is populated/updated
+        let mut cached_env = outp.env;
+        cached_env.insert(OsString::from("CNS_SHELL_HOOKED"), OsString::from("1"));
+
+        cached_env
     };
 
     let shellopts = env.remove(OsStr::new("SHELLOPTS")).unwrap_or_default();
