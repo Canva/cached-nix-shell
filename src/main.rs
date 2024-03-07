@@ -155,6 +155,10 @@ fn args_to_inp(pwd: PathBuf, x: &Args) -> NixShellInput {
             // We want to pass SHELL by default
             // https://canva.sourcegraphcloud.com/search?q=context:global+ORIGINAL_USER_SHELL&patternType=keyword&sm=0
             "SHELL",
+            // Pass this to prevent disrupting the pure interactive shell session. Sourcing 
+            // `/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` again could alter
+            // `$PATH`, even in pure mode. We aim to avoid this.
+            "__ETC_PROFILE_NIX_SOURCED",
         ];
         for var in whitelist {
             if let Some(val) = std::env::var_os(var) {
@@ -501,6 +505,10 @@ fn merge_env(mut env: EnvMap) -> EnvMap {
         "TZ",
         "PAGER",
         "SHLVL",
+        // Pass this to prevent disrupting the pure interactive shell session. Sourcing 
+        // `/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh` again could alter
+        // `$PATH`, even in pure mode. We aim to avoid this.
+        "__ETC_PROFILE_NIX_SOURCED",
     ];
     for var in keep {
         if let Some(vel) = std::env::var_os(var) {
