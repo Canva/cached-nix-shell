@@ -8,21 +8,22 @@ assert pkgs.lib.assertMsg
   "The project doesn't support Nix of version ${pkgs.nix.version}. The minimum required version is ${minNixVer}.";
 
 let
+  nix_2_19 = pkgs.nixVersions.nix_2_19;
   naersk = pkgs.callPackage sources.naersk { };
   gitignoreSource = (pkgs.callPackage sources.gitignore { }).gitignoreSource;
   blake3-src = sources.BLAKE3;
 
   ESSENTIALS = with pkgs;
-    lib.makeBinPath [ bashInteractive coreutils nix gitMinimal gnutar gzip ];
+    lib.makeBinPath [ bashInteractive coreutils nix_2_19 gitMinimal gnutar gzip ];
   BASH_INTERACTIVE = "${pkgs.bashInteractive}/bin/bash";
-  NIX_BIN = "${pkgs.nix}/bin";
+  NIX_BIN = "${nix_2_19}/bin";
   IN_NIX = true;
 
-  # The main cached-nix-shell package. It's subject for override (see below) of the 
+  # The main cached-nix-shell package. It's subject for override (see below) of the
   # underlying derivation attributes so the build works correctly.
   package = naersk.buildPackage {
     root = gitignoreSource ./.;
-    buildInputs = with pkgs; [ openssl nix ronn ];
+    buildInputs = with pkgs; [ openssl nix_2_19 ronn ];
   };
   # Final overrides.
   package' = package.overrideAttrs (_: {
